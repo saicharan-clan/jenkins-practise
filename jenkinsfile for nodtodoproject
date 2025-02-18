@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    environment {
+        DOCKER_IMAGE = 'saicharan09/mass:v2'  // Replace with your image name
+    }
+    stages {
+        stage('checkout') {
+            steps {
+                echo 'git clone'
+                git 'https://github.com/saicharan-clan/node-todo-cicd.git'
+            }
+        }
+        stage("build"){
+            steps{
+                echo "building docker image" 
+                sh 'docker build -t $DOCKER_IMAGE .'
+            }
+        }
+        stage('login'){
+            steps{
+                echo "docker login"
+                withCredentials([usernamePassword(credentialsId: '442deecb-0762-492d-99dd-53a3b4634802', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                    sh 'docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"'
+                }
+            }
+        }
+        stage("push"){
+            steps{
+                sh 'docker push $DOCKER_IMAGE'
+            }
+        }
+        stage("scanning"){
+            steps{
+                echo "scanning with trivy"
+                sh 'trivy image  --severity HIGH,CRITICAL $DOCKER_IMAGE'
+            }
+        }
+    }
+}
