@@ -1,0 +1,2 @@
++ sonar-scanner -Dsonar.host.url=http://44.204.159.149:9000/ -Dsonar.projectKey=narasimha -Dsonar.projectName=narasimha -Dsonar.projectVersion=1.0 -Dsonar.sources=src -Dsonar.login=****
+/var/lib/jenkins/workspace/latest@tmp/durable-8277b125/script.sh.copy: 2: sonar-scanner: not found
