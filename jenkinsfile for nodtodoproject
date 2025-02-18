@@ -2,6 +2,7 @@ pipeline {
     agent any
     environment {
         DOCKER_IMAGE = 'saicharan09/mass:v2'  // Replace with your image name
+        SONAR_URL = 'http://44.204.159.149:9000/'
     }
     stages {
         stage('checkout') {
@@ -14,6 +15,23 @@ pipeline {
             steps{
                 echo "building docker image" 
                 sh 'docker build -t $DOCKER_IMAGE .'
+            }
+        }
+        stage("code quality analysis"){
+            steps{
+                echo "static code analysis"
+                withCredentials([string(credentialsId: 'sonarqube', variable: 'SONARQUBE')]) {
+                   sh '''
+                   sonar-scanner \
+                   -Dsonar.host.url=${SONAR_URL} \
+                   -Dsonar.projectKey=narasimha \
+                   -Dsonar.projectName=narasimha \
+                   -Dsonar.projectVersion=1.0 \
+                   -Dsonar.sources=src \
+                   -Dsonar.login=${SONARQUBE}
+                   '''
+                }
+                
             }
         }
         stage('login'){
