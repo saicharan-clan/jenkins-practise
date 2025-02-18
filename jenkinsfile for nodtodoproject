@@ -24,8 +24,8 @@ pipeline {
                    sh '''
                    sonar-scanner \
                    -Dsonar.host.url=${SONAR_URL} \
-                   -Dsonar.projectKey=narasimha \
-                   -Dsonar.projectName=narasimha \
+                   -Dsonar.projectKey=nodeprj \
+                   -Dsonar.projectName=nodeprj \
                    -Dsonar.projectVersion=1.0 \
                    -Dsonar.sources=src \
                    -Dsonar.login=${SONARQUBE}
