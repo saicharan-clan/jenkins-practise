@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/LondheShubham153/node-todo-cicd.git'
+            }
+        }
+        stage('Source Code Analysis') {
+            steps {
+                withCredentials([string(credentialsId: 'SONARQUBE_TOKEN', variable: 'AUTHENTICATION_TOKEN')]) {
+                    sh '''
+                        sonar-scanner \
+                        -Dsonar.projectKey=non-java-project \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://54.145.162.163:9000 \
+                        -Dsonar.login=$AUTHENTICATION_TOKEN
+                    '''
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                echo "Building Docker image..."
+                sh 'docker build -t node-app .'
+            }
+        }
+        stage('Docker Login') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub_credentials', 
+                                                  usernameVariable: 'DOCKER_USERNAME', 
+                                                  passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh '''
+                        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                    '''
+                }
+            }
+        }
+        stage('Tag and Push') {
+            steps {
+                sh '''
+                    docker tag node-app:latest $DOCKER_USERNAME/node-app:latest
+                    docker push $DOCKER_USERNAME/node-app:latest
+                '''
+            }
+        }
+        stage("Deploy"){
+            steps{
+                sh "docker compose down && docker compose up -d --build"
+            }
+        }
+    }
+}
